@@ -57,17 +57,6 @@
 
   }
 
-  /** 
-   * Indica si value es un valor válido de fecha ISO
-   * 
-   * @param {string} str Valor string a comprobar
-   * @returns {boolean}
-   */
-  function isISODateString(str) {
-    return typeof str === 'string' &&
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(str);
-  }
-
   /**
    * Serializa un Map.
    * 
@@ -146,26 +135,29 @@
    * @returns {string} Valor de tipo string con formato JSON
    */
   function stringifyObject(obj) {
-    if (!obj || typeof obj !== 'object') throw new Error("El parámetro 'map' no es válido.")
+    if (!obj || typeof obj !== 'object') throw new Error("El parámetro 'obj' no es válido.");
 
     function replacer(key, value) {
       if (value instanceof Date) {
         return { __type: 'Date', value: value.toISOString() };
       }
+      // Para arrays u objetos anidados
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        for (const k in value) {
+          if (value[k] instanceof Date) {
+            value[k] = { __type: 'Date', value: value[k].toISOString() };
+          }
+        }
+      }
       return value;
     }
 
-    try {  
-      return JSON.stringify(obj, replacer);
-    } catch (error) {
-      console.error(`Error en Utils.stringifyObject: ${error.message}`);
-      throw error;
-    }
+    return JSON.stringify(obj, replacer);
   }
 
   /**
    * Deserializa un objeto a partir de una string con formato JSON 
-   * resultado de su serialización con Utils.stringifyMap().
+   * resultado de su serialización con Utils.stringifyObject().
    *  
    * @param {string} json Valor de tipo string con formato JSON
    * @returns {Object} Objeto
@@ -180,13 +172,58 @@
       return value;
     }
 
-    try {  
-      return JSON.parse(json, reviver);
-    } catch (error) {
-      console.error(`Error en Utils.parseObject: ${error.message}`);
-      throw error;
-    }
+    return JSON.parse(json, reviver);
   }
+//   /**
+//    * Serializa un objeto.
+//    * 
+//    * @param {Object} obj Objeto a serializar
+//    * @returns {string} Valor de tipo string con formato JSON
+//    */
+//   function stringifyObject(obj) {
+//     if (!obj || typeof obj !== 'object') throw new Error("El parámetro 'map' no es válido.")
+
+//     function replacer(key, value) {
+// console.log(`replacer called !!! - Key: ${key} / Value: ${JSON.stringify(value)} / Value Type: ${typeof value}`)
+//       if (isDate(value)) { //value instanceof Date) {
+//         return { __type: 'Date', value: value.toISOString() };
+//       }
+//       return value;
+//     }
+
+//     try {  
+//       return JSON.stringify(obj, replacer);
+//     } catch (error) {
+//       console.error(`Error en Utils.stringifyObject: ${error.message}`);
+//       throw error;
+//     }
+//   }
+
+//   /**
+//    * Deserializa un objeto a partir de una string con formato JSON 
+//    * resultado de su serialización con Utils.stringifyMap().
+//    *  
+//    * @param {string} json Valor de tipo string con formato JSON
+//    * @returns {Object} Objeto
+//    */
+//   function parseObject(json) {
+//     if (typeof json !== 'string' || json.trim() === '') throw new Error("El parámetro 'json' no es válido.");
+
+//     function reviver(key, value) {
+// console.log(`reviver called !!! - Key: ${key} / Value: ${JSON.stringify(value)} / Value Type: ${typeof value}`)
+//       if (value && typeof value === 'object' && value.__type === 'Date') {
+//         return new Date(value.value);
+//       }
+//       return value;
+//     }
+
+//     try {  
+//       return JSON.parse(json, reviver);
+//     } catch (error) {
+//       console.error(`Error en Utils.parseObject: ${error.message}`);
+//       throw error;
+//     }
+//   }
 
 //   return {
 //     toSlug: toSlug,

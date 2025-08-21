@@ -7,8 +7,12 @@
  * @return {boolean}
  */
 function _validate(obj, methods) {
-  if (!obj || typeof obj !== 'object') return false;
-  return methods.every(method => typeof obj[method] === 'function');
+  try {
+    if (!obj || typeof obj !== 'object') return false;
+    return methods.every(method => typeof obj[method] === 'function');
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -18,13 +22,5 @@ function _validate(obj, methods) {
  * @return {boolean}
  */
 function isMap(map) {
-  return (
-    typeof map === 'object' &&
-    map !== null &&
-    typeof map.entries === 'function' &&
-    typeof map.get === 'function' &&
-    typeof map.set === 'function' &&
-    typeof map.has === 'function' &&
-    typeof map.delete === 'function'
-  );
+  return this._validate(map, ['entries', 'get', 'set', 'has', 'delete'])
 }
